@@ -8,6 +8,31 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 
 public class JobRepository {
+
+    public void updateState(String id, JobState state) {
+
+        String sql = """
+            UPDATE jobs
+            SET state=?,
+                updated_at=?
+            WHERE id=?
+            """;
+
+        try (
+                Connection connection = DatabaseConfig.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+
+            statement.setString(1, state.name());
+            statement.setString(2, Instant.now().toString());
+            statement.setString(3, id);
+
+            statement.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     public void update(Job job) {
 
         String sql = """
@@ -46,10 +71,11 @@ public class JobRepository {
     public Job findPendingJob() {
 
         String sql = """
-            SELECT * FROM jobs
+            SELECT *
+            FROM jobs
             WHERE state = 'PENDING'
-            LIMIT 1
-            """;
+            ORDER BY created_at
+            LIMIT 1 """;
 
         try (
                 Connection connection = DatabaseConfig.getConnection();
@@ -69,11 +95,11 @@ public class JobRepository {
                 job.setCreatedAt(Instant.parse(rs.getString("created_at")));
                 job.setUpdatedAt(Instant.parse(rs.getString("updated_at")));
 
-                String retry = rs.getString("next_retry_at");
-
-                if (retry != null) {
-                    job.setNextRetryAt(Instant.parse(retry));
-                }
+//                String retry = rs.getString("next_retry_at");
+//
+//                if (retry != null) {
+//                    job.setNextRetryAt(Instant.parse(retry));
+//                }
 
                 return job;
             }
