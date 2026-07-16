@@ -41,7 +41,11 @@ public class EnqueueCommand implements Runnable {
 
             // Save to database
             JobRepository repository = new JobRepository();
-            repository.save(job);
+            if (repository.save(job)) {
+                System.out.println("Job Enqueued Successfully!");
+            } else {
+                System.out.println("Failed to enqueue job!");
+            }
 
             System.out.println("\nJob Enqueued Successfully!");
             System.out.println("----------------------------");

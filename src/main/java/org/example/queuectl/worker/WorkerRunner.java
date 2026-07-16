@@ -1,5 +1,6 @@
 package org.example.queuectl.worker;
 
+import org.example.queuectl.config.QueueConfig;
 import org.example.queuectl.model.Job;
 import org.example.queuectl.model.JobState;
 import org.example.queuectl.repository.JobRepository;
@@ -48,11 +49,46 @@ public class WorkerRunner {
             boolean success = worker.execute(job.getCommand());
 
             if (success) {
+
                 repository.updateState(job.getId(), JobState.COMPLETED);
+
                 System.out.println("[Worker " + workerId + "] Completed " + job.getId());
+
             } else {
-                repository.updateState(job.getId(), JobState.FAILED);
-                System.out.println("[Worker " + workerId + "] Failed " + job.getId());
+
+                repository.incrementAttempts(job.getId());
+
+                Job updatedJob = repository.findById(job.getId());
+
+                if (updatedJob.getAttempts() >= updatedJob.getMaxRetries()) {
+
+                    repository.updateState(job.getId(), JobState.DEAD);
+
+                    System.out.println("[Worker " + workerId + "] Job moved to DEAD : " + job.getId());
+
+                } else {
+
+                    int delay = (int) Math.pow(
+                            QueueConfig.BASE_BACKOFF,
+                            updatedJob.getAttempts()
+                    );
+
+                    System.out.println(
+                            "[Worker " + workerId + "] Retrying "
+                                    + job.getId()
+                                    + " after "
+                                    + delay
+                                    + " second(s)"
+                    );
+
+                    try {
+                        Thread.sleep(delay * 1000L);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+
+                    repository.updateState(job.getId(), JobState.PENDING);
+                }
             }
         }
     }
