@@ -10,6 +10,68 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JobRepository {
+    public Job claimPendingJob() {
+
+        try (Connection connection = DatabaseConfig.getConnection()) {
+
+            connection.setAutoCommit(false);
+
+            String selectSql = """
+                SELECT *
+                FROM jobs
+                WHERE state = 'PENDING'
+                ORDER BY created_at
+                LIMIT 1
+                """;
+
+            PreparedStatement select = connection.prepareStatement(selectSql);
+            ResultSet rs = select.executeQuery();
+
+            if (!rs.next()) {
+                connection.commit();
+                return null;
+            }
+
+            Job job = new Job();
+            job.setId(rs.getString("id"));
+            job.setCommand(rs.getString("command"));
+            job.setState(JobState.valueOf(rs.getString("state")));
+            job.setAttempts(rs.getInt("attempts"));
+            job.setMaxRetries(rs.getInt("max_retries"));
+            job.setCreatedAt(Instant.parse(rs.getString("created_at")));
+            job.setUpdatedAt(Instant.parse(rs.getString("updated_at")));
+
+            String updateSql = """
+                UPDATE jobs
+                SET state = ?,
+                    updated_at = ?
+                WHERE id = ?
+                """;
+
+            PreparedStatement update = connection.prepareStatement(updateSql);
+
+            update.setString(1, JobState.PROCESSING.name());
+            update.setString(2, Instant.now().toString());
+            update.setString(3, job.getId());
+
+            update.executeUpdate();
+
+            connection.commit();
+
+            return job;
+
+        }catch (Exception e) {
+
+            if (e instanceof java.sql.SQLException &&
+                    e.getMessage() != null &&
+                    e.getMessage().contains("database is locked")) {
+                return null;
+            }
+
+            e.printStackTrace();
+            return null;
+        }
+    }
     public boolean retryDeadJob(String id) {
 
         String sql = """

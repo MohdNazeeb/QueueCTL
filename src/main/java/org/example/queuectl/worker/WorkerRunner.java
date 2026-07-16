@@ -35,15 +35,8 @@ public class WorkerRunner {
 
         while (true) {
 
-            Job job = repository.findPendingJob();
-
-            if (job == null) {
-                sleep(2000);
-                continue;
-            }
-
-            repository.updateState(job.getId(), JobState.PROCESSING);
-
+            Job job = repository.claimPendingJob();
+            System.out.println("Claimed job = " + (job == null ? "null" : job.getId()));
             System.out.println("[Worker " + workerId + "] Executing " + job.getId());
 
             boolean success = worker.execute(job.getCommand());
