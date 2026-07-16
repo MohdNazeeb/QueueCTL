@@ -9,7 +9,8 @@ import picocli.CommandLine.Command;
         version = "1.0",
         description = "A CLI-based Background Job Queue System",
         subcommands = {
-                EnqueueCommand.class
+                EnqueueCommand.class,
+                ListCommand.class
         }
 )
 public class QueueCtl implements Runnable {

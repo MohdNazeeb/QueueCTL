@@ -2,11 +2,36 @@ package org.example.queuectl.repository;
 
 import org.example.queuectl.config.DatabaseConfig;
 import org.example.queuectl.model.Job;
-
+import java.sql.ResultSet;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
 public class JobRepository {
+    public void listJobs() {
+
+        String sql = "SELECT * FROM jobs";
+
+        try (
+                Connection connection = DatabaseConfig.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql);
+                ResultSet resultSet = statement.executeQuery()
+        ) {
+
+            while (resultSet.next()) {
+
+                System.out.println("----------------------------");
+                System.out.println("Job ID      : " + resultSet.getString("id"));
+                System.out.println("Command     : " + resultSet.getString("command"));
+                System.out.println("State       : " + resultSet.getString("state"));
+                System.out.println("Attempts    : " + resultSet.getInt("attempts"));
+                System.out.println("Max Retries : " + resultSet.getInt("max_retries"));
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public void save(Job job) {
 
