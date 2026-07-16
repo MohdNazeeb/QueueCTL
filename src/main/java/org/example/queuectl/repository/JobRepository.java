@@ -10,6 +10,36 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JobRepository {
+    public boolean retryDeadJob(String id) {
+
+        String sql = """
+            UPDATE jobs
+            SET state = ?,
+                attempts = 0,
+                updated_at = ?
+            WHERE id = ?
+            """;
+
+        try (
+                Connection connection = DatabaseConfig.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+
+            statement.setString(1, JobState.PENDING.name());
+            statement.setString(2, Instant.now().toString());
+            statement.setString(3, id);
+
+            return statement.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+    public List<Job> findDeadJobs() {
+        return findByState(JobState.DEAD);
+    }
     public List<Job> findByState(JobState state) {
 
         List<Job> jobs = new ArrayList<>();
