@@ -1,9 +1,13 @@
 package org.example.queuectl.cli;
 
 import org.example.queuectl.model.Job;
+import org.example.queuectl.model.JobState;
+import org.example.queuectl.repository.JobRepository;
 import org.example.queuectl.util.JsonUtil;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
+
+import java.time.Instant;
 
 @Command(
         name = "enqueue",
@@ -24,9 +28,26 @@ public class EnqueueCommand implements Runnable {
 
             Job job = JsonUtil.getMapper().readValue(jobJson, Job.class);
 
-            System.out.println("Job Parsed Successfully!");
+            // Set default values
+            job.setState(JobState.PENDING);
+            job.setAttempts(0);
+
+            if (job.getMaxRetries() == 0) {
+                job.setMaxRetries(3);
+            }
+
+            job.setCreatedAt(Instant.now());
+            job.setUpdatedAt(Instant.now());
+
+            // Save to database
+            JobRepository repository = new JobRepository();
+            repository.save(job);
+
+            System.out.println("\nJob Enqueued Successfully!");
+            System.out.println("----------------------------");
             System.out.println("Job ID      : " + job.getId());
             System.out.println("Command     : " + job.getCommand());
+            System.out.println("State       : " + job.getState());
             System.out.println("Max Retries : " + job.getMaxRetries());
 
         } catch (Exception e) {
@@ -35,6 +56,5 @@ public class EnqueueCommand implements Runnable {
             System.out.println(e.getMessage());
 
         }
-
     }
 }
