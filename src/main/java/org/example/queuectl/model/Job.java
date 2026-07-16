@@ -1,15 +1,21 @@
 package org.example.queuectl.model;
 
 import java.time.Instant;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 public class Job {
 
     private String id;
     private String command;
     private JobState state;
     private int attempts;
+
+    @JsonProperty("max_retries")
     private int maxRetries;
+
+    @JsonProperty("created_at")
     private Instant createdAt;
+
+    @JsonProperty("updated_at")
     private Instant updatedAt;
 
     public Job() {

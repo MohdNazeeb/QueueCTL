@@ -1,5 +1,7 @@
 package org.example.queuectl.cli;
 
+import org.example.queuectl.model.Job;
+import org.example.queuectl.util.JsonUtil;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
@@ -18,8 +20,21 @@ public class EnqueueCommand implements Runnable {
     @Override
     public void run() {
 
-        System.out.println("Received Job:");
-        System.out.println(jobJson);
+        try {
+
+            Job job = JsonUtil.getMapper().readValue(jobJson, Job.class);
+
+            System.out.println("Job Parsed Successfully!");
+            System.out.println("Job ID      : " + job.getId());
+            System.out.println("Command     : " + job.getCommand());
+            System.out.println("Max Retries : " + job.getMaxRetries());
+
+        } catch (Exception e) {
+
+            System.out.println("Invalid Job JSON!");
+            System.out.println(e.getMessage());
+
+        }
 
     }
 }
