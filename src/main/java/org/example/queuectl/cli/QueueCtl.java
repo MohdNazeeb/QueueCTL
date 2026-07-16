@@ -12,7 +12,8 @@ import picocli.CommandLine.Command;
                 EnqueueCommand.class,
                 ListCommand.class,
                 WorkerCommand.class,
-                StatusCommand.class
+                StatusCommand.class,
+                DlqCommand.class
         }
 )
 public class QueueCtl implements Runnable {

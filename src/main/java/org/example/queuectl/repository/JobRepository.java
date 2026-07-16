@@ -10,6 +10,42 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JobRepository {
+    public List<Job> findByState(JobState state) {
+
+        List<Job> jobs = new ArrayList<>();
+
+        String sql = "SELECT * FROM jobs WHERE state = ? ORDER BY created_at";
+
+        try (
+                Connection connection = DatabaseConfig.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+
+            statement.setString(1, state.name());
+
+            ResultSet rs = statement.executeQuery();
+
+            while (rs.next()) {
+
+                Job job = new Job();
+
+                job.setId(rs.getString("id"));
+                job.setCommand(rs.getString("command"));
+                job.setState(JobState.valueOf(rs.getString("state")));
+                job.setAttempts(rs.getInt("attempts"));
+                job.setMaxRetries(rs.getInt("max_retries"));
+                job.setCreatedAt(Instant.parse(rs.getString("created_at")));
+                job.setUpdatedAt(Instant.parse(rs.getString("updated_at")));
+
+                jobs.add(job);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jobs;
+    }
     public List<Job> findAll() {
 
         List<Job> jobs = new ArrayList<>();
