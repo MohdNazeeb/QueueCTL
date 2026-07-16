@@ -1,5 +1,5 @@
 package org.example.queuectl.cli;
-
+import org.example.queuectl.cli.WorkerCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -10,7 +10,8 @@ import picocli.CommandLine.Command;
         description = "A CLI-based Background Job Queue System",
         subcommands = {
                 EnqueueCommand.class,
-                ListCommand.class
+                ListCommand.class,
+                WorkerCommand.class
         }
 )
 public class QueueCtl implements Runnable {

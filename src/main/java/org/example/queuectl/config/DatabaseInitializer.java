@@ -9,14 +9,15 @@ public class DatabaseInitializer {
 
         String sql = """
                 CREATE TABLE IF NOT EXISTS jobs (
-                    id TEXT PRIMARY KEY,
-                    command TEXT NOT NULL,
-                    state TEXT NOT NULL,
-                    attempts INTEGER NOT NULL,
-                    max_retries INTEGER NOT NULL,
-                    created_at TEXT NOT NULL,
-                    updated_at TEXT NOT NULL
-                );
+                      id TEXT PRIMARY KEY,
+                      command TEXT NOT NULL,
+                      state TEXT NOT NULL,
+                      attempts INTEGER NOT NULL,
+                      max_retries INTEGER NOT NULL,
+                      created_at TEXT NOT NULL,
+                      updated_at TEXT NOT NULL,
+                      next_retry_at TEXT
+                  );
                 """;
 
         try (

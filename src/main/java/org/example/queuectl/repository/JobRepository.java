@@ -1,5 +1,6 @@
 package org.example.queuectl.repository;
-
+import org.example.queuectl.model.JobState;
+import java.time.Instant;
 import org.example.queuectl.config.DatabaseConfig;
 import org.example.queuectl.model.Job;
 import java.sql.ResultSet;
@@ -7,6 +8,82 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 
 public class JobRepository {
+    public void update(Job job) {
+
+        String sql = """
+            UPDATE jobs
+            SET
+                state=?,
+                attempts=?,
+                updated_at=?,
+                next_retry_at=?
+            WHERE id=?
+            """;
+
+        try (
+                Connection connection = DatabaseConfig.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+
+            statement.setString(1, job.getState().name());
+            statement.setInt(2, job.getAttempts());
+            statement.setString(3, job.getUpdatedAt().toString());
+
+            if (job.getNextRetryAt() == null) {
+                statement.setNull(4, java.sql.Types.VARCHAR);
+            } else {
+                statement.setString(4, job.getNextRetryAt().toString());
+            }
+
+            statement.setString(5, job.getId());
+
+            statement.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public Job findPendingJob() {
+
+        String sql = """
+            SELECT * FROM jobs
+            WHERE state = 'PENDING'
+            LIMIT 1
+            """;
+
+        try (
+                Connection connection = DatabaseConfig.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql);
+                ResultSet rs = statement.executeQuery()
+        ) {
+
+            if (rs.next()) {
+
+                Job job = new Job();
+
+                job.setId(rs.getString("id"));
+                job.setCommand(rs.getString("command"));
+                job.setState(JobState.valueOf(rs.getString("state")));
+                job.setAttempts(rs.getInt("attempts"));
+                job.setMaxRetries(rs.getInt("max_retries"));
+                job.setCreatedAt(Instant.parse(rs.getString("created_at")));
+                job.setUpdatedAt(Instant.parse(rs.getString("updated_at")));
+
+                String retry = rs.getString("next_retry_at");
+
+                if (retry != null) {
+                    job.setNextRetryAt(Instant.parse(retry));
+                }
+
+                return job;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
     public void listJobs() {
 
         String sql = "SELECT * FROM jobs";
@@ -45,7 +122,7 @@ public class JobRepository {
                     created_at,
                     updated_at
                 )
-                VALUES(?,?,?,?,?,?,?)
+                VALUES(?,?,?,?,?,?,?.?)
                 """;
 
         try (
@@ -60,7 +137,10 @@ public class JobRepository {
             statement.setInt(5, job.getMaxRetries());
             statement.setString(6, job.getCreatedAt().toString());
             statement.setString(7, job.getUpdatedAt().toString());
-
+            statement.setString(
+                    8,
+                    job.getNextRetryAt() == null ? null : job.getNextRetryAt().toString()
+            );
             statement.executeUpdate();
 
             System.out.println("Job saved successfully!");

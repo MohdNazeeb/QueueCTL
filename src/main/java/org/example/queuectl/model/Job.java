@@ -8,7 +8,7 @@ public class Job {
     private String command;
     private JobState state;
     private int attempts;
-
+    private Instant nextRetryAt;
     @JsonProperty("max_retries")
     private int maxRetries;
 
@@ -34,6 +34,14 @@ public class Job {
 
     public String getId() {
         return id;
+    }
+
+    public Instant getNextRetryAt() {
+        return nextRetryAt;
+    }
+
+    public void setNextRetryAt(Instant nextRetryAt) {
+        this.nextRetryAt = nextRetryAt;
     }
 
     public void setId(String id) {
