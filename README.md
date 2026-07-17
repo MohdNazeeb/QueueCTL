@@ -450,30 +450,53 @@ Potential enhancements include:
 
 ---
 
-#  Screenshots
+# Screenshots
 
-## CLI Help
+## CLI Help & Available Commands
 
-_Add screenshot here_
-
----
-
-## Job Processing
-
-_Add screenshot here_
+![CLI Help](images/HelpCommand.png)
 
 ---
 
-## Queue Status
+## Enqueue a New Job
 
-_Add screenshot here_
+![Enqueue Command](images/EnqueueCommand.png)
 
 ---
 
-## Dead Letter Queue
+## Background Worker Execution
 
-_Add screenshot here_
+![Worker Execution](images/WorkerExecution.png)
 
+---
+
+## View All Jobs
+
+![List Command](images/ListCommand.png)
+
+---
+
+##  Queue Statistics
+
+![Queue Status](images/QueueStatus.png)
+
+---
+
+##  Dead Letter Queue
+
+![DLQ List](images/DLQList.png)
+
+---
+
+##  Retry Dead Job
+
+![DLQ Retry](images/DLQRetry.png)
+
+---
+
+##  Filter Jobs by State 
+
+![List Dead](images/ListDead.png)
 ---
 
 ##  Design Decisions
