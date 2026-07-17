@@ -12,6 +12,13 @@ QueueCTL is a lightweight background job processing system inspired by popular j
 The project is built completely in **Java 21** using **Picocli**, **SQLite**, and **JDBC**, demonstrating concepts such as multithreading, concurrent job processing, persistence, and fault tolerance.
 
 ---
+#  Demo Video
+
+A complete walkthrough of QueueCTL demonstrating job enqueueing, background worker execution, queue monitoring, retry handling, and Dead Letter Queue (DLQ) operations.
+  
+> **[▶️ QueueCTL Demo Video](https://drive.google.com/file/d/1AO_QxGtiiloKMD6vONSujoPlA9lsXmQC/view?usp=sharing)**
+
+---
 
 # Table of Contents
 
