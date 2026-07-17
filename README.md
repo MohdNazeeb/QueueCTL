@@ -1,4 +1,9 @@
-# 🚀 QueueCTL
+# QueueCTL
+![Java](https://img.shields.io/badge/Java-21-orange)
+![Maven](https://img.shields.io/badge/Maven-Build-blue)
+![SQLite](https://img.shields.io/badge/Database-SQLite-green)
+![Picocli](https://img.shields.io/badge/CLI-Picocli-red)
+![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
 > **A CLI-based Background Job Queue System built in Java**
 
@@ -8,7 +13,7 @@ The project is built completely in **Java 21** using **Picocli**, **SQLite**, an
 
 ---
 
-# 📌 Table of Contents
+# Table of Contents
 
 - Overview
 - Features
@@ -26,11 +31,12 @@ The project is built completely in **Java 21** using **Picocli**, **SQLite**, an
 - Internal Architecture
 - Future Improvements
 - Screenshots
+- Design Decisions
 - Author
 
 ---
 
-# 📖 Overview
+# Overview
 
 Background job queues are used to execute long-running or asynchronous tasks without blocking the main application.
 
@@ -40,7 +46,7 @@ This project demonstrates several backend engineering concepts commonly used in 
 
 ---
 
-# ✨ Features
+# Features
 
 ## Job Queue
 
@@ -110,7 +116,7 @@ Supports multiple commands and subcommands.
 
 ---
 
-# 🏗 System Architecture
+#  System Architecture
 
 ```mermaid
 flowchart TD
@@ -155,7 +161,7 @@ R --> G
 ```
 ---
 
-# 🛠 Technology Stack
+#  Technology Stack
 
 | Technology | Purpose |
 |------------|---------|
@@ -168,7 +174,7 @@ R --> G
 
 ---
 
-# 📁 Project Structure
+#  Project Structure
 
 ```
 QueueCTL
@@ -193,7 +199,7 @@ QueueCTL
 
 ---
 
-# ⚙ Installation
+#  Installation
 
 Clone the repository.
 
@@ -205,7 +211,7 @@ cd QueueCTL
 
 ---
 
-# 🔨 Build
+#  Build
 
 Compile the project using Maven.
 
@@ -217,7 +223,7 @@ After a successful build, Maven generates the executable JAR inside the `target`
 
 ---
 
-# ▶ Running the Application
+#  Running the Application
 
 Display available commands:
 
@@ -227,7 +233,7 @@ java -jar target/queuectl-1.0-SNAPSHOT.jar --help
 
 ---
 
-# 📚 CLI Commands
+#  CLI Commands
 
 ## Enqueue Job
 
@@ -310,7 +316,7 @@ java -jar target/queuectl-1.0-SNAPSHOT.jar dlq retry fail1
 
 ---
 
-# 🔄 Example Workflow
+#  Example Workflow
 
 ### Step 1
 
@@ -362,50 +368,33 @@ java -jar target/queuectl-1.0-SNAPSHOT.jar dlq retry fail1
 
 ---
 
-# 📈 Job Lifecycle
+#  Job Lifecycle
 
+
+##  Job Lifecycle
+
+```mermaid
+stateDiagram-v2
+
+[*] --> PENDING
+
+PENDING --> PROCESSING
+
+PROCESSING --> COMPLETED
+
+PROCESSING --> FAILED
+
+FAILED --> PENDING : Retry
+
+FAILED --> DEAD : Max Retries
+
+DEAD --> PENDING : dlq retry
 ```
-                    +-----------+
-                    |  PENDING  |
-                    +-----+-----+
-                          |
-                          |
-                          ▼
-                  +---------------+
-                  | PROCESSING    |
-                  +-------+-------+
-                          |
-              +-----------+------------+
-              |                        |
-              |                        |
-              ▼                        ▼
-      +---------------+        +---------------+
-      | COMPLETED     |        | FAILED        |
-      +---------------+        +-------+-------+
-                                       |
-                              Retry Available?
-                                       |
-                        +--------------+--------------+
-                        |                             |
-                       Yes                           No
-                        |                             |
-                        ▼                             ▼
-                  +-----------+                +-----------+
-                  | PENDING   |                |   DEAD    |
-                  +-----------+                +-----+-----+
-                                                     |
-                                                     |
-                                            dlq retry command
-                                                     |
-                                                     ▼
-                                                +---------+
-                                                |PENDING  |
-                                                +---------+
-```
+
 
 ---
 
-# 🔁 Retry Strategy
+#  Retry Strategy
 
 QueueCTL uses exponential backoff before retrying failed jobs.
 
@@ -421,7 +410,7 @@ This prevents continuous rapid retries and mimics production queue systems.
 
 ---
 
-# 🔒 Atomic Job Claiming
+#  Atomic Job Claiming
 
 To prevent duplicate execution when multiple workers are running, QueueCTL atomically claims jobs before processing.
 
@@ -429,23 +418,22 @@ Only one worker can transition a job from **PENDING** to **PROCESSING**, prevent
 
 ---
 
-# 💾 Database Schema
+##  Database Schema
 
-The SQLite database stores jobs with the following fields.
+| Column | Type | Description |
+|---------|------|-------------|
+| id | TEXT | Unique job identifier |
+| command | TEXT | Command to execute |
+| state | TEXT | Current job state |
+| attempts | INTEGER | Retry attempts |
+| max_retries | INTEGER | Maximum retries |
+| created_at | TEXT | Creation timestamp |
+| updated_at | TEXT | Last update timestamp |
 
-| Column | Description |
-|----------|------------|
-| id | Unique job identifier |
-| command | Command to execute |
-| state | Current job state |
-| attempts | Number of retries |
-| max_retries | Maximum retries |
-| created_at | Creation timestamp |
-| updated_at | Last updated timestamp |
 
 ---
 
-# 🚀 Future Improvements
+#  Future Improvements
 
 Potential enhancements include:
 
@@ -462,7 +450,7 @@ Potential enhancements include:
 
 ---
 
-# 📸 Screenshots
+#  Screenshots
 
 ## CLI Help
 
@@ -488,16 +476,26 @@ _Add screenshot here_
 
 ---
 
-# 👨‍💻 Author
+##  Design Decisions
+
+### Why SQLite?
+SQLite provides lightweight, file-based persistence without requiring an external database server, making the project easy to set up and portable.
+
+### Why Picocli?
+Picocli simplifies building feature-rich command-line interfaces with support for subcommands, validation, and help generation.
+
+### Why Atomic Job Claiming?
+When multiple workers run concurrently, atomic job claiming ensures that a job is processed by only one worker, preventing duplicate execution and race conditions.
+
+### Why Exponential Backoff?
+Exponential backoff avoids repeatedly retrying failing jobs in rapid succession, reducing unnecessary resource usage and mirroring strategies used in production job queue systems.
+
+#  Author
 
 **Mohd Nazeeb Mansoori**
 
-Backend Developer | Java Developer
+Java Backend Developer
 
-GitHub: https://github.com/<your-username>
-
-LinkedIn: https://linkedin.com/in/<your-linkedin>
-
+## LinkedIn: https://linkedin.com/in/mohd-nazeeb-mansoori
+## LeetCode: https://leetcode.com/u/MohdNazeeb
 ---
-
-# ⭐ If you found this project useful, consider giving it a star.
